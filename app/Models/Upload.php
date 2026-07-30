@@ -14,6 +14,7 @@ class Upload extends Model
         'original_name',
         'file_type',
         'file_size',
-        'mime_type'
+        'mime_type',
+        'file_path'
     ];
 }

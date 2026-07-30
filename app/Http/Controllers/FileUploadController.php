@@ -43,7 +43,7 @@ class FileUploadController extends Controller
                 'success' => true,
                 'message' => 'File uploaded successfully',
                 'data' => $upload,
-                'preview_url' => $this->getPrevieUrl($upload)
+                'preview_url' => $this->getPreviewUrl($upload)
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

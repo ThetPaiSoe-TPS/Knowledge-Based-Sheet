@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,3 +16,6 @@ Route::get('files', [FileUploadController::class, 'index']);
 Route::post('files/upload', [FileUploadController::class, 'upload']);
 Route::get('files/preview/{id}', [FileUploadController::class, 'preview']);
 Route::delete('files/preview/{id}', [FileUploadController::class, 'delete']);
+
+
+Route::apiResource('items', ItemController::class);
