@@ -3,12 +3,16 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PostAuthoController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes (no authentication needed)
@@ -26,36 +30,34 @@ Route::delete('files/preview/{id}', [FileUploadController::class, 'delete']);
 
 Route::apiResource('items', ItemController::class);
 
-// Post routes (public for viewing)
-Route::get('/posts', [PostController::class, 'index']);
-Route::get('/posts/{id}', [PostController::class, 'show']);
-Route::get('/users/{userId}/posts', [PostController::class, 'getPostsByUser']);
-
 // Auth routes (public)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Comments routes (public for viewing)
-Route::get('/posts/{postId}/comments', [CommentController::class, 'index']);
-
 // ============================================
 // PROTECTED ROUTES (Require Authentication)
 // ============================================
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'auto.renew'])->group(function () {
 
-    // Logout
+    Route::post('/renew-token', [AuthController::class, 'renew']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
+
+    // Post routes with authorization
+    Route::get('/posts', [PostAuthoController::class, 'index']);
+    Route::get('/posts/{id}', [PostAuthoController::class, 'show']);
+    Route::post('/posts', [PostAuthoController::class, 'store']);
+    Route::put('/posts/{id}', [PostAuthoController::class, 'update']);
+    Route::delete('/posts/{id}', [PostAuthoController::class, 'destroy']);
+    Route::post('/posts/{id}/publish', [PostAuthoController::class, 'publish']);
+
 
     // ✅ ADD THIS: Create order route
     Route::post('/orders', [OrderController::class, 'createOrder']);
 
     // Order management
     Route::post('/orders/{orderId}/ship', [OrderController::class, 'shipOrder']);
-
-    // Post management
-    Route::post('/posts', [PostController::class, 'store']);
-    Route::put('/posts/{id}', [PostController::class, 'update']);
-    Route::delete('/posts/{id}', [PostController::class, 'destroy']);
 
     // Comment management
     Route::post('/comments', [CommentController::class, 'store']);
@@ -90,4 +92,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/subscribers', [NewsletterController::class, 'subscribe']);
     Route::get('/subscribers', [NewsletterController::class, 'subscribers']);
     Route::put('/subscribers/{id}/unsubscribe', [NewsletterController::class, 'unsubscribe']);
+
+    Route::post('/images/upload', [ImageController::class, 'upload']);
+    Route::get('/images/{id}/status', [ImageController::class, 'status']);
+
+    Route::post('/welcome', [WelcomeController::class, 'store']);
+    Route::get('/welcome/{id}/status', [WelcomeController::class, 'status']);
+
+    Route::post('/reports/generate', [ReportController::class, 'generate']);
+    Route::get('/reports/{id}/status', [ReportController::class, 'status']);
+    Route::get('/reports/{id}/download', [ReportController::class, 'download']);
 });

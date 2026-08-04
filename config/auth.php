@@ -13,7 +13,11 @@ return [
             'provider' => 'users',
         ],
 
-        // ✅ Add this Sanctum guard
+        'api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
         'sanctum' => [
             'driver' => 'sanctum',
             'provider' => 'users',

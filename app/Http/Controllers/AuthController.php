@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendWelcomeEmail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -10,31 +9,28 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    // ✅ Register with optional remember_token
     public function register(Request $request)
     {
-        $user = User::create($request->all());
-
-        SendWelcomeEmail::dispatch($user);
-
-
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8'
+            'password' => 'required|string|min:8',
+            'role' => 'sometimes|in:admin,editor,user'
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'status' => 'active'
+            'role' => $request->role ?? 'user'
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'message' => 'User registered! Check your email',
+            'message' => 'User registered!',
             'data' => [
                 'user' => $user,
                 'token' => $token
@@ -42,40 +38,103 @@ class AuthController extends Controller
         ], 201);
     }
 
+    // ✅ Login with Remember Me
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => 'required',
+            'remember' => 'sometimes|boolean'
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.']
-            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials'
+            ], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // ✅ Set token expiration based on remember
+        $remember = $request->remember ?? false;
+        $expiration = $remember ? 525600 : 1; // 1 year or 2 hours
 
+        $token = $user->createToken(
+            'auth_token',
+            ['*'],
+            now()->addMinutes($expiration)
+        )->plainTextToken;
+
+        // ✅ Store remember flag in response
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
             'data' => [
-                'user' => $user,
-                'token' => $token
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role
+                ],
+                'token' => $token,
+                'remember' => $remember,
+                'expires_in' => $expiration . ' minutes'
             ]
         ]);
     }
 
+    // ✅ Logout - clear remember token
     public function logout(Request $request)
     {
+        $user = $request->user();
+
+        // ✅ Clear remember token
+        $user->remember_token = null;
+        $user->save();
+
+        // ✅ Delete current token
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'success' => true,
             'message' => 'Logged out successfully'
+        ]);
+    }
+
+    // ✅ Get current user
+    public function user(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $request->user()
+        ]);
+    }
+
+    // ✅ Renew token (for long sessions)
+    public function renew(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // Delete current token
+        $request->user()->currentAccessToken()->delete();
+
+        // Create new token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token renewed!',
+            'data' => [
+                'token' => $token
+            ]
         ]);
     }
 }
