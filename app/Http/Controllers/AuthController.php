@@ -58,13 +58,19 @@ class AuthController extends Controller
 
         // ✅ Set token expiration based on remember
         $remember = $request->remember ?? false;
-        $expiration = $remember ? 525600 : 1; // 1 year or 2 hours
+        $expiration = $remember ? 525600 : 120; // 1 year or 2 hours
 
         $token = $user->createToken(
             'auth_token',
             ['*'],
             now()->addMinutes($expiration)
         )->plainTextToken;
+
+        // ✅ Store remember token if needed
+        if ($remember) {
+            $user->remember_token = hash('sha256', $token);
+            $user->save();
+        }
 
         // ✅ Store remember flag in response
         return response()->json([
@@ -124,10 +130,15 @@ class AuthController extends Controller
         }
 
         // Delete current token
-        $request->user()->currentAccessToken()->delete();
+        $user->currentAccessToken()->delete();
 
         // Create new token
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken(
+            'auth_token',
+            ['*'],
+            now()->addMinutes(525600)  // 1 year
+        )->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -135,6 +146,35 @@ class AuthController extends Controller
             'data' => [
                 'token' => $token
             ]
+        ]);
+    }
+
+    // ✅ Add change password method
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed'
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect.'
+            ], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Optionally: Delete all tokens (force re-login)
+        $user->tokens()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password changed successfully! Please login again.'
         ]);
     }
 }

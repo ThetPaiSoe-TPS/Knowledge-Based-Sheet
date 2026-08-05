@@ -52,7 +52,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'remember.token' => \App\Http\Middleware\RememberTokenMiddleware::class,
-            'auto.renew' => \App\Http\Middleware\AutoRenewToken::class,
+            // 'auto.renew' => \App\Http\Middleware\AutoRenewToken::class,
+        ]);
+
+        $middleware->api(prepend: [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -609,15 +609,15 @@ This guide covers everything a 2+ year experienced developer needs for database 
 ==========>
 1. Authentication and Authorization:
 ✅remember me
-password reset
+✅password reset
 
 2. Security
-csrf
-cors
-xss
-sql injection
-mass assignment
-rate limiting
+✅csrf
+✅cors
+✅xss
+✅sql injection
+✅mass assignment
+✅rate limiting
 password hashing
 encryption
 api tokne

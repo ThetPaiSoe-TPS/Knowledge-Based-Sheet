@@ -8,8 +8,8 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PostAuthoController;
-use App\Http\Controllers\PostController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
@@ -35,9 +35,25 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // ============================================
+// PASSWORD RESET ROUTES (Public)
+// ============================================
+
+// 1. Request password reset link
+Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLink']);
+
+// 2. Verify token
+Route::post('/password/verify-token', [PasswordResetController::class, 'verifyToken']);
+
+// 3. Reset password
+Route::post('/password/reset', [PasswordResetController::class, 'reset']);
+
+// 4. Check reset status
+Route::post('/password/check-status', [PasswordResetController::class, 'checkStatus']);
+
+// ============================================
 // PROTECTED ROUTES (Require Authentication)
 // ============================================
-Route::middleware(['auth:sanctum', 'auto.renew'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('/renew-token', [AuthController::class, 'renew']);
 
