@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ItemController;
@@ -97,6 +98,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/user/{userId}/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::put('/{notificationId}/mark-read', [NotificationController::class, 'markAsRead']);
         Route::delete('/{notificationId}', [NotificationController::class, 'destroy']);
+    });
+
+    Route::prefix('employees')->group(function () {
+        Route::get('/', [EmployeeController::class, 'index']);
+        Route::post('/', [EmployeeController::class, 'store']);
+        Route::get('/{id}', [EmployeeController::class, 'show']);
+        Route::put('/{id}', [EmployeeController::class, 'update']);
+        Route::delete('/{id}', [EmployeeController::class, 'destroy']);
     });
 
     // Newsletter routes

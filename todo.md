@@ -643,3 +643,34 @@ React Testing Library
 vitest
 Cypress
 
+===
+
+session
+fluent string
+enum
+facades 
+feature test
+jwt
+dependency injection
+macors
+octane
+repository pattern
+multitenancy 
+contract
+json column
+data pipeling
+batch insert and update
+casting
+helper
+observers 
+job chaining
+job batching
+rotate token
+scoult
+redis
+load balancer 
+db replica
+db lock
+optimizing lock
+replace subquery with join
+spatie
