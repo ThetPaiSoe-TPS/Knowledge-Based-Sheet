@@ -9,9 +9,11 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderItemsController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PostAuthoController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -127,4 +129,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/reports/generate', [ReportController::class, 'generate']);
     Route::get('/reports/{id}/status', [ReportController::class, 'status']);
     Route::get('/reports/{id}/download', [ReportController::class, 'download']);
+
+    Route::prefix('tasks')->group(function () {
+        Route::get('/', [TaskController::class, 'index']);
+        Route::post('/', [TaskController::class, 'store']);
+        Route::get('/{id}', [TaskController::class, 'show']);
+        Route::put('/{id}', [TaskController::class, 'update']);
+        Route::delete('/{id}', [TaskController::class, 'destroy']);
+    });
+
+    Route::prefix('order_items')->group(function(){
+        Route::get('/', [OrderItemsController::class, 'index']);
+        Route::post('/', [OrderItemsController::class, 'store']);
+        Route::get('/{id}', [OrderItemsController::class, 'show']);
+        Route::put('/{id}', [OrderItemsController::class, 'update']);
+        Route::delete('/{id}', [OrderItemsController::class, 'destroy']);
+    });
 });
